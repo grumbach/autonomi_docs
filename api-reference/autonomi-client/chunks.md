@@ -8,16 +8,19 @@ Chunks are native data types in the Autonomi Network:
 
 ### Client Methods
 
-* **chunk\_get**\
+* **chunk_get**\
   Retrieves a chunk from the network by its address.
-* **chunk\_put**\
+* **chunk_put**\
   Uploads a chunk to the network with payment handling.\
   Returns the total cost and the chunk's address.
-* **chunk\_cost**\
+* **chunk_cost**\
   Estimates the storage cost for a chunk.
 
-### Example
+---
 
+## Usage Examples
+
+### Rust
 ```rust
 use autonomi::Client;
 use autonomi::client::payment::PaymentOption;
@@ -25,12 +28,13 @@ use autonomi::client::chunk::{Chunk, Bytes};
 use test_utils::evm::get_funded_wallet;
 use eyre::Result;
 
-async fn chunk_put_example() -> Result<()> {
-    // initialize a local client and test wallet
+#[tokio::main]
+async fn main() -> Result<()> {
+    // Initialize a local client and test wallet
     let client = Client::init_local().await?;
     let wallet = get_funded_wallet();
 
-    // create a Chunk with some data
+    // Create a Chunk with some data
     let chunk = Chunk::new(Bytes::from("Hello, world!"));
 
     // Estimate cost
@@ -52,4 +56,67 @@ async fn chunk_put_example() -> Result<()> {
     println!("Chunk retrieved successfully");
     Ok(())
 }
+```
+
+### Python
+```python
+from autonomi_client import Client, PaymentOption, Chunk
+import asyncio
+
+async def main():
+    client = await Client.init_local()
+    # Assume you have a funded wallet object
+    wallet = ...
+
+    # Create a chunk
+    chunk = Chunk(b"Hello, world!")
+
+    # Estimate cost
+    cost = await client.chunk_cost(chunk.address)
+    print(f"Chunk cost: {cost}")
+
+    # Upload chunk with payment
+    payment_option = PaymentOption.wallet(wallet)
+    put_cost, addr = await client.chunk_put(chunk.value, payment_option)
+    print(f"Chunk put cost: {put_cost}")
+
+    # Retrieve and verify the chunk
+    got = await client.chunk_get(addr)
+    assert got == chunk.value
+    print("Chunk retrieved successfully")
+
+asyncio.run(main())
+```
+
+### JavaScript/TypeScript
+```js
+import { Client, PaymentOption, Chunk } from '@withautonomi/autonomi';
+
+async function main() {
+    const client = await Client.initLocal();
+    // Assume you have a funded wallet object
+    const wallet = ...;
+
+    // Create a chunk
+    const chunk = new Chunk(Buffer.from('Hello, world!'));
+
+    // Estimate cost
+    const cost = await client.chunkCost(chunk.address());
+    console.log(`Chunk cost: ${cost}`);
+
+    // Upload chunk with payment
+    const paymentOption = PaymentOption.wallet(wallet);
+    const [putCost, addr] = await client.chunkPut(chunk, paymentOption);
+    console.log(`Chunk put cost: ${putCost}`);
+
+    // Retrieve and verify the chunk
+    const got = await client.chunkGet(addr);
+    if (Buffer.compare(got, chunk.value()) === 0) {
+        console.log('Chunk retrieved successfully');
+    } else {
+        throw new Error('Chunk data mismatch');
+    }
+}
+
+main();
 ```
